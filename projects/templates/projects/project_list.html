@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Проекты</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f6f8;
+            margin: 0;
+            padding: 0;
+        }
+
+        .container {
+            width: 700px;
+            margin: 60px auto;
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+        }
+
+        h1 {
+            text-align: center;
+            margin-bottom: 10px;
+        }
+
+        .user {
+            text-align: center;
+            color: #666;
+            margin-bottom: 25px;
+        }
+
+        .top-buttons {
+            margin-bottom: 25px;
+        }
+
+        a.button {
+            display: inline-block;
+            background-color: #2d72d9;
+            color: white;
+            padding: 8px 14px;
+            border-radius: 8px;
+            text-decoration: none;
+            margin-right: 10px;
+            margin-top: 10px;
+        }
+
+        a.button:hover {
+            background-color: #1f5bb5;
+        }
+
+        .danger {
+            background-color: #dc3545;
+        }
+
+        .danger:hover {
+            background-color: #b02a37;
+        }
+
+        .task-button {
+            background-color: #28a745;
+        }
+
+        .task-button:hover {
+            background-color: #218838;
+        }
+
+        .project {
+            padding: 15px 0;
+            border-bottom: 1px solid #eee;
+        }
+
+        .project:last-child {
+            border-bottom: none;
+        }
+
+        .title {
+            font-weight: bold;
+            font-size: 18px;
+        }
+
+        .description {
+            color: #555;
+            margin-top: 5px;
+            margin-bottom: 10px;
+        }
+
+        .tasks {
+            margin-top: 12px;
+            background: #f9fafb;
+            padding: 12px 14px;
+            border-radius: 8px;
+        }
+
+        .tasks ul {
+            margin: 8px 0 0 18px;
+            padding: 0;
+        }
+
+        .tasks li {
+            margin-bottom: 6px;
+            color: #444;
+        }
+
+        .logout {
+            margin-top: 30px;
+            text-align: center;
+        }
+
+        button {
+            background-color: #e04e4e;
+            color: white;
+            border: none;
+            padding: 8px 14px;
+            border-radius: 8px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: #c73c3c;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Список проектов</h1>
+
+        <div class="user">
+            Вы вошли как: {{ request.user.username }}
+        </div>
+
+        <div class="top-buttons">
+            {% if request.user.profile.role == 'admin' %}
+                <a href="{% url 'create_project' %}" class="button">+ Создать проект</a>
+            {% endif %}
+
+            {% if request.user.profile.role == 'admin' or request.user.profile.role == 'manager' %}
+                <a href="{% url 'create_task' %}" class="button task-button">+ Создать задачу</a>
+            {% endif %}
+        </div>
+
+        {% for project in projects %}
+            <div class="project">
+                <div class="title">{{ project.title }}</div>
+                <div class="description">{{ project.description }}</div>
+
+                <div class="tasks">
+                    <strong>Задачи:</strong>
+                    <ul>
+                        {% for task in project.tasks.all %}
+                            <li>
+    {% if task.completed %}
+        ✅
+    {% else %}
+        ⬜
+    {% endif %}
+    {{ task.title }}
+
+    {% if task.assigned_to %}
+        — {{ task.assigned_to.username }}
+    {% endif %}
+
+    {% if not task.completed %}
+        <form method="post" action="{% url 'complete_task' task.pk %}" style="display:inline;">
+            {% csrf_token %}
+            <button type="submit" style="
+                margin-left:10px;
+                background:#28a745;
+                color:white;
+                border:none;
+                padding:4px 10px;
+                border-radius:6px;
+                cursor:pointer;
+            ">
+                Выполнено
+            </button>
+        </form>
+    {% endif %}
+</li>
+                        {% empty %}
+                            <li>Задач пока нет</li>
+                        {% endfor %}
+                    </ul>
+                </div>
+
+                {% if request.user.profile.role == 'admin' or request.user.profile.role == 'manager' %}
+                    <p>
+                        <a href="{% url 'update_project' project.pk %}" class="button">Редактировать</a>
+                    </p>
+                {% endif %}
+
+                {% if request.user.profile.role == 'admin' %}
+                    <p>
+                        <a href="{% url 'delete_project' project.pk %}" class="button danger">Удалить</a>
+                    </p>
+                {% endif %}
+            </div>
+        {% empty %}
+            <p>Нет проектов</p>
+        {% endfor %}
+
+        <div class="logout">
+            <form method="post" action="{% url 'logout' %}">
+                {% csrf_token %}
+                <button type="submit">Выйти</button>
+            </form>
+        </div>
+    </div>
+</body>
+</html>
