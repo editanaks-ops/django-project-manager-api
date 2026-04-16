@@ -78,7 +78,7 @@ python manage.py migrate
 python manage.py runserver
 ```
 
-## 👤 Roles
+##  Roles
 
 | Role  | Permissions |
 | ----- | ----------- |
